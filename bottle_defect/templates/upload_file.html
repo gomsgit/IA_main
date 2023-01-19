@@ -1,0 +1,182 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block content %}
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+</head>
+
+<style>
+    .lds-facebook {
+        display: inline-block;
+        position: relative;
+        width: 80px;
+        height: 80px;
+      }
+      .lds-facebook div {
+        display: inline-block;
+        position: absolute;
+        left: 8px;
+        width: 16px;
+        background: #fff;
+        animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+      }
+      .lds-facebook div:nth-child(1) {
+        left: 8px;
+        height: 100%;
+        animation-delay: -0.24s;
+      }
+      .lds-facebook div:nth-child(2) {
+        left: 32px;
+        height: 100%;
+        animation-delay: -0.12s;
+      }
+      .lds-facebook div:nth-child(3) {
+        left: 56px;
+        height: 100%;
+        animation-delay: 0;
+      }
+      @keyframes lds-facebook {
+        0% {
+          top: 8px;
+          height: 64px;
+        }
+        50%, 100% {
+          top: 24px;
+          height: 32px;
+        }
+      }
+</style>
+
+<script>
+    function upload() {
+        let data = document.getElementById("file1").files[0];
+        let entry = document.getElementById("file1").files[0];
+        console.log('upload',entry,data)
+        fetch('media/' + encodeURIComponent(entry.name), {method:'PUT',body:data});
+        alert('your file has been uploaded');
+        location.reload();
+    };
+
+    function _(el) {
+      return document.getElementById(el);
+    }
+
+    function uploadFile() {
+      var file = _("file1").files[0];
+      // alert(file.name+" | "+file.size+" | "+file.type);
+      var formdata = new FormData();
+      formdata.append("file1", file);
+      var ajax = new XMLHttpRequest();
+      ajax.upload.addEventListener("progress", progressHandler, false);
+      ajax.addEventListener("load", completeHandler, false);
+      ajax.addEventListener("error", errorHandler, false);
+      ajax.addEventListener("abort", abortHandler, false);
+      ajax.open("POST", "file_upload_parser.php"); // http://www.developphp.com/video/JavaScript/File-Upload-Progress-Bar-Meter-Tutorial-Ajax-PHP
+      //use file_upload_parser.php from above url
+      ajax.send(formdata);
+    }
+
+    function progressHandler(event) {
+      _("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total;
+      var percent = (event.loaded / event.total) * 100;
+      _("progressBar").value = Math.round(percent);
+      _("status").innerHTML = Math.round(percent) + "% uploaded... please wait";
+    }
+
+    function completeHandler(event) {
+      _("status").innerHTML = event.target.responseText;
+      _("progressBar").value = 0; //wil clear progress bar after successful upload
+    }
+
+    function errorHandler(event) {
+      _("status").innerHTML = "Upload Failed";
+    }
+
+    function abortHandler(event) {
+      _("status").innerHTML = "Upload Aborted";
+    }
+
+    function move() {
+      var elem = document.getElementById("bar");
+      var width = 1;
+      var id = setInterval(frame, 25);
+      function frame() {
+        if (width >= 100) {
+          clearInterval(id);
+        } else {
+          width++;
+          elem.style.width = width + '%';
+        }
+      }
+    }
+
+<!--    function progress_bar(){-->
+<!--        console.log('calling function');-->
+<!--        var body_div = document.getElementById('body_1');-->
+<!--        var div_css = document.getElementById('div_css')-->
+
+<!--        body_div.style.opacity = 0.5;-->
+<!--        div_css.style.display = 'block';-->
+<!--      }-->
+</script>
+
+<body id="body_1" style="height: auto; overflow-y: hidden;">
+<div style="padding-top:50px;">
+<button type="button" onclick="history.back()" style="display: none;" id="back-btn" ></button>
+<a href="#" style="color:white; margin-left:150px; margin-top:60px;" onclick="document.getElementById('back-btn').click()"  alt="Back"><b>BACK</b></a>
+<h3 class="text-white" style="margin-top: 10px; margin-left: 180px;">Hello <strong>{{ request.user.username }}</strong>,</h3>
+{% if portfolio_screen == '1' %}
+    <p class="text-white" style="margin-left: 180px;">Please upload the Real time image of bottle for analysis</p>
+{% else %}
+    <p class="text-white" style="margin-left: 180px;">Please upload the multiple image of bottle for analysis</p>
+{% endif %}
+<div class="container col-sm-4 text-white rounded-top " style="background-color: white; height: 300px;width:500px; margin-left: 370px; margin-top: 20px;border-style: solid; border-color:white; ">
+    <div style="margin-top:20px; ">
+        <form method="POST" enctype="multipart/form-data" action="upload_file">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <h5 class="text-black" style="margin-left: 125px; ">Upload your image here</h5>
+                <!--              <p class="text-white" style="margin-left: 150px;">Only JPG, JPEG and PNG are allowed</p>-->
+                <div class="form" style="background-color: white; margin-top: 20px; height: 130px;width:350px;border-style: solid; border-color:white; margin-left: 70px;">
+
+                    <div style="margin-top: 20px;">
+                        <!--                            <img src="static/assets/img/upload.png" alt="upload" width="10%" class="mx-2" style="margin-top:5px;" onclick="upload()"><br>-->
+                        {% if portfolio_screen == '1' %}
+                            <center>
+                                <label for="file" >Browse to choose a file</label>
+                                <input type="file" name="file1" id="file1" onchange="move()" style="margin-top: 10px; margin-left: 120px;" multiple><br>
+<!--                                <i class="text-white" style="font-size: 12px ; margin-top:30px;">Only JPG, JPEG and PNG are allowed</i>-->
+                            </center>
+                        {% else %}
+                            <center>
+                                <input type="file" class="form-control"  name="file1" id="file2" onchange="move()" style="margin-top: 10px;  width:300px;" multiple = "true" webkitdirectory="true" directory = "true" required><br>
+<!--                                <i class="text-white" style="font-size: 12px ; margin-top:30px;">Only JPG, JPEG and PNG are allowed</i>-->
+                            </center>
+                        {% endif %}
+
+                    </div>
+                </div>
+                <div class="progress" id="show_block" style="margin-top:-20px; width: 350px; border-style: groove; border-color: white; height: 10px;margin-left: 70px;  ">
+                    <div class="progress-bar" role="progressbar" id="bar" >
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn-proceed btn-text" style="color:black; border: none; margin-top: 30px; margin-left: 320px;"
+                        type="submit" onclick="progress_bar()">
+                    ANALYZE
+                </button>
+            </div>
+            <div class="lds-facebook" id='div_css' style='position:absolute; display:none; height: 100px; width: 200px; margin-top:-150px; margin-left:200px;'><div style='background-color: black;'></div><div style='background-color: black;'></div><div style='background-color: black;'></div></div>
+        </form>
+    </div>
+</div>
+</div>
+
+{% endblock content %}
+</body>
